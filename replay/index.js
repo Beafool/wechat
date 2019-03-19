@@ -4,6 +4,7 @@
 */
 const sha1 = require('sha1');
 const { getUserDataAsync,parseXMLData,formatJSData}=require('../utils/tools');
+const template = require('./template');
 module.exports= () =>{
     return async (req, res) => {
         //微信服务器发送过来的请求参数
@@ -55,23 +56,32 @@ module.exports= () =>{
             const userData = formatJSData(jsData);
 
             //  实现自动回复
-            let  content = '请说普通话';
-            if(userData.Content === '1' ){
-                content = '床前明月光';
-            }else if (userData.Content.indexOf('2') !== -1){
-                content = '你今天把我害惨了 \n \n \n 害我那么喜欢你';
+            let options = {
+                toUserName: userData.FromUserName,
+                fromUserName: userData.ToUserName,
+                createTime: Date.now(),
+                type: 'text',
+                content: '请说普通话'
             }
-            let replyMessage=`<xml>
-              <ToUserName><![CDATA[${userData.FromUserName }]]></ToUserName>
-              <FromUserName><![CDATA[${userData.ToUserName}]]></FromUserName>
-              <CreateTime>${Date.now()}</CreateTime>
-              <MsgType><![CDATA[text]]></MsgType>
-              <Content><![CDATA[${content}]]></Content>
-            </xml>`
 
-            //返回响应
+            if (userData.Content === '1') {
+                options.content = '床前明月光';
+            } else if (userData.Content && userData.Content.indexOf('2') !== -1) {
+                options.content = '你今天把我害惨了 \n \n \n 害我这么喜欢你';
+            }
+
+            if (userData.MsgType === 'image') {
+                //将用户发送的图片，返回回去
+                options.mediaId = userData.MediaId;
+                options.type = 'image';
+            }
+
+
+            const replyMessage = template(options);
+            console.log(replyMessage);
+
+            // 返回响应
             res.send(replyMessage);
-
         }else {
             res.end('error')
         }
