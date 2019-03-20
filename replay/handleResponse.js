@@ -14,8 +14,8 @@ module.exports=(userData) =>{
         // 说明用户发送的是文本消息
         if (userData.Content === '郑凤丽') {
             options.content = '...你今天真怪... \n \n ...怪可爱的...';
-        } else if (userData.Content && userData.Content.indexOf('麻花') !== -1) {
-            options.content = '...你今天把我害惨了... \n \n ...害我那么喜欢你...';
+        } else if (userData.Content && userData.Content.indexOf('小傻子') !== -1) {
+            options.content = '...你今天真过分... \n \n ...过分美丽...';
         } else {
             options.content = '说人话';
         }
