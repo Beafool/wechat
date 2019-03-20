@@ -1,40 +1,41 @@
 /*
-工具函数模块
-*/
-const { parseString ,} = require('xml2js');
-module.exports={
-    /*用来获取用户发送的消息*/
-     getUserDataAsync (req){
-        const xmlData= new Promise(((resolve, reject) => {
-            let  xmlData= '';
+  工具函数模块
+ */
+const { parseString } = require('xml2js');
+
+module.exports = {
+    /**
+     * 用来获取用户发送的消息
+     * @param req
+     * @return {Promise<any>}
+     */
+    getUserDataAsync (req) {
+        return new Promise((resolve, reject) => {
+            let xmlData = '';
             req
-                .on('data',data => {
-                    //console.log(data.toString())     //buffer数据 需要转换
-                    xmlData+=data.toString();
+                .on('data', (data) => {
+                    xmlData += data.toString();
                 })
-                .on('end', ( ) =>{
-                    //说明数据接收完毕
-                    resolve(xmlData);
-
+                .on('end', () => {
+                    //说明数据接受完毕
+                    resolve(xmlData)
                 })
-
-        }))
+        })
     },
 
     /**
      * 将xml数据解析为js对象
      * @param xmlData
-     * @returns {jsData}
+     * @return jsData
      */
-    parseXMLData (xmlData){
+    parseXMLData (xmlData) {
         let jsData = null;
-        parseString(xmlData,{trim:true},(err,result)=>{
-            if(!err){
+        parseString(xmlData, {trim: true}, (err, result) => {
+            if (!err) {
                 jsData = result;
-            }else{
+            } else {
                 jsData = {};
             }
-
         })
         return jsData;
     },
@@ -44,13 +45,16 @@ module.exports={
      * @param jsData
      * @return userData
      */
-    formatJSData(jsData){
-        const  {xml} = jsData;
+    formatJsData (jsData) {
+        const { xml } = jsData;
         const userData = {};
-        for(let key in xml){
+        for (let key in xml) {
+            // 获取到属性值
             const value = xml[key];
-            userData[key]=value[0];
+            // 去掉数组
+            userData[key] = value[0];
         }
         return userData;
     }
+
 }

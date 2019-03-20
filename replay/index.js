@@ -1,89 +1,53 @@
-
 /*
-    中间件函数模块
-*/
+  中间件函数模块： 接受请求，返回响应
+ */
 const sha1 = require('sha1');
-const { getUserDataAsync,parseXMLData,formatJSData}=require('../utils/tools');
+const { getUserDataAsync, parseXMLData, formatJsData } = require('../utils/tools');
 const template = require('./template');
-module.exports= () =>{
+const handleResponse = require('./handleResponse');
+
+module.exports = () => {
+
     return async (req, res) => {
         //微信服务器发送过来的请求参数
-        console.log(req.query);
-        /*
-          { signature: '1803ce659da462f08de2569a1d1cfd69e4be2997',   微信加密签名
-          echostr: '4694387874978528247', 微信后台生成的随机字符串
-          timestamp: '1552974353',  微信后台发送请求的时间戳
-          nonce: '1754707196' }     微信后台生成的随机数字
-         */
-
-
         const { signature, echostr, timestamp, nonce } = req.query;
         const token = 'heifengli1128';
-        // 1）将token、timestamp、nonce三个参数进行字典序排序
-        //const sortedArr = [token, timestamp, nonce].sort();
-        // console.log(sortedArr);
-        // 2）将三个参数字符串拼接成一个字符串进行sha1加密
-        //const sha1Str = sha1(sortedArr.join(''));
-        //console.log(sha1Str);
-
+        //通过微信签名算法加密出来微信签名
         const sha1Str = sha1([token, timestamp, nonce].sort().join(''));
+
         if (req.method === 'GET') {
-            // 3）开发者获得加密后的字符串可与signature对比，标识该请求来源于微信
+            // 处理验证服务器消息有效性
             if (sha1Str === signature) {
                 // 说明消息来自于微信服务器
-                res.send(echostr);
+                res.end(echostr);
             } else {
                 // 说明消息不是微信服务器
                 res.end('error');
             }
-
-        }else if(req.method === 'POST'){
-            //用户发过来的消息
-            // console.log(req.body); 通过中间件解析不了数据  需要使用其他方法
-
-            //过滤掉不是微信服务器发送过来的消息  是就执行  不是就直接return
-            if(sha1Str !== signature){
+        } else if (req.method === 'POST') {
+            // 处理用户发送过来的消息
+            // 过滤掉不是微信服务器发送过来的消息
+            if (sha1Str !== signature) {
                 res.end('error');
                 return;
             }
-            //获取到了用户发送过来的消息
+            // 获取到了用户发送过来的消息
             const xmlData = await getUserDataAsync(req);
-
-            //将xml数据转化成js对象
+            // 将xml数据转换成js对象
             const jsData = parseXMLData(xmlData);
-
-            //格式化jsData
-            const userData = formatJSData(jsData);
-
-            //  实现自动回复
-            let options = {
-                toUserName: userData.FromUserName,
-                fromUserName: userData.ToUserName,
-                createTime: Date.now(),
-                type: 'text',
-                content: '请说普通话'
-            }
-
-            if (userData.Content === '1') {
-                options.content = '床前明月光';
-            } else if (userData.Content && userData.Content.indexOf('2') !== -1) {
-                options.content = '你今天把我害惨了 \n \n \n 害我这么喜欢你';
-            }
-
-            if (userData.MsgType === 'image') {
-                //将用户发送的图片，返回回去
-                options.mediaId = userData.MediaId;
-                options.type = 'image';
-            }
-
-
+            // 格式化jsData
+            const userData = formatJsData(jsData);
+            // 处理用户发送的消息，定义响应的数据
+            const options = handleResponse(userData);
+            // 用于定义回复用户消息的6种模板模块
             const replyMessage = template(options);
+            // 如果响应错误， 看打印结果是否错误
             console.log(replyMessage);
-
             // 返回响应
             res.send(replyMessage);
-        }else {
-            res.end('error')
+
+        } else {
+            res.end('error');
         }
 
     }
