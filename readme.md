@@ -44,17 +44,17 @@
   * 封装格式化js对象的方法的工具函数
 * 封装中间件函数模块，采用的
   * app.use(reply())
-   * reply() 方法 返回值是一个中间件函数 --> 更有利于扩展函数的功能
-   * 将相关模块依赖放进来并且修改好模块路径
- * promise对象用法：要提取异步函数的数据，使用promise对象  
- * await用法：要提取promise对象的数据
- * async用法：只要用了await，才在当前函数加上async
+  * reply() 方法 返回值是一个中间件函数 --> 更有利于扩展函数的功能
+  * 将相关模块依赖放进来并且修改好模块路径
+* promise对象用法：要提取异步函数的数据，使用promise对象  
+* await用法：要提取promise对象的数据
+* async用法：只要用了await，才在当前函数加上async
 
 ## 4、封装回复6种消息模板文件
 * 回复6种类型，根据type来判断
 * 里面尽可能少写重复代码，用字符串拼串的方式实现。
   * 重复的字符串提取出来，不同的单独拼接
-
+  
 ## 5、完成回复完整用户消息
 * 封装处理用户发送的消息，定义响应的数据的模块
 * 通过判断不同的消息类型 MsgType 返回不同的响应内容
@@ -62,7 +62,7 @@
   * 接受普通消息 https://mp.weixin.qq.com/wiki?t=resource/res_main&id=mp1421140453
   * 接受事件消息 https://mp.weixin.qq.com/wiki?t=resource/res_main&id=mp1421140454 
 
-## 6、自定义菜单
+## 6、获取access_token
 * 接口
   * 简单来讲：就是一个url地址  http://localhost:3000/login
   * 完整包含：
@@ -71,3 +71,51 @@
     * 请求地址
     * 请求头/cookie
     * 响应信息
+    * ....
+* 定义获取access_token的模块
+  * 封装了getAccessToken函数
+    * 定义请求地址：三个参数，其中appID、appsecret填写自己页面的，grant_type=client_credential这个值是固定不变的
+    * 发送请求，使用的request request-promise-native
+    * 设置过期时间 2小时更新，需要提前5分钟刷新
+    * 保存为一个本地文件（只能保存字符串数据，将js对象转换为json字符串）fs.writeFile
+    * 将获取的access_token数据返回出去
+  * 封装了fetchAccessToken函数
+    * 读取本地accessToken.txt文件 fs.readFile
+    * 如果有判断是否过期，没有过期就直接使用，过期了就调用getAccessToken函数
+    * 如果没有就直接调用getAccessToken函数
+  * 注意promise对象返回值问题
+    * return 返回值看整体表达式的返回值
+    * promise对象表达式返回值就是then / catch函数的返回值
+    * then / catch函数的返回值看内部箭头函数的返回值
+
+## 7、自定义菜单
+* 创建菜单
+  * 获取access_token
+  * 定义请求地址
+    * POST请求需要携带body参数
+  * 发送请求
+  * 返回响应结果
+* 删除菜单
+  * 获取access_token
+  * 定义请求地址
+  * 发送请求
+  * 返回响应结果
+* 总结：实现接口的函数定义的规则
+  * 获取access_token
+  * 定义请求地址
+    * 注意请求参数问题
+  * 发送请求
+  * 返回响应结果
+  
+## 常见问题总结
+* 问题描述：该公众号提供的服务出现故障，请稍后再试
+* 问题原因以及解决办法：
+  * 没有返回合法的 xml数据 或者 '' 给微信服务器
+    * 如果还在开发测试阶段（自动回复功能还没写完） res.end('');
+    * 如果开发完成还不行，说明回复了非法数据，检查replyMessage的值，看是否有undefined或者回复的xml格式不正确，修改好。
+  * ngrok服务器出现故障（红色 restart...），导致不到请求也返回不了响应
+    * 重启ngrok, 修改测试接口号网址，重新提交、测试
+    
+    
+   
+
