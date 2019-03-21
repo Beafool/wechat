@@ -4,6 +4,7 @@
 //菜单配置项
 const rp = require('request-promise-native');
 const fetchAccessToken = require('./access-token');
+const URL_PREFIX = `https://api.weixin.qq.com/cgi-bin/`;
 
 const menu = {
     "button":[
@@ -64,27 +65,84 @@ async function createMenu() {
     //获取access_token
     const { access_token } = await fetchAccessToken();
     // 定义请求的地址
-    const url = `https://api.weixin.qq.com/cgi-bin/menu/create?access_token=${access_token}`;
+    const url = `${URL_PREFIX}menu/create?access_token=${access_token}`;
     //发送请求
    const  result = await rp({method:'POST',url,json:true,body:menu});
 
    return result;
 
 }
+//删除菜单
 async function deleteMenu() {
     //获取access_token
     const { access_token } = await fetchAccessToken();
     // 定义请求的地址
-    const url = `https://api.weixin.qq.com/cgi-bin/menu/create?access_token=${access_token}`;
+    const url = `${URL_PREFIX}menu/delete?access_token=${access_token}`;
     //发送请求
     const  result = await rp({method:'GET',url,json:true});
 
     return result;
 
 }
+
+//用户标签管理
+
+//1.创建标签
+async  function createTag(name) {
+        //获取access_token
+        const { access_token } =await fetchAccessToken();
+        //定义请求
+        const url = `${URL_PREFIX}tags/create?access_token=${access_token}`;
+        //发送请求
+        return await rp({method:'POST',url,json:true,body: {tag:{name}}})
+
+    }
+
+/**
+ * 获取标签下的所有粉丝列表
+ * @param tagid 标签id
+ * @param next_openid 从哪个用户开始拉取
+ * @return {promise<*>}
+ */
+async  function getTagUsers(tagid,next_openid) {
+    //获取access_token
+    const { access_token } =await fetchAccessToken();
+    //定义请求
+    const url = `${URL_PREFIX}tag/get?access_token=${access_token}`;
+    //发送请求
+    return await rp({method:'POST',url,json:true,body: {tagid,next_openid}});
+
+}
+
+/**
+ * 批量为多个用户打标签
+ * @param openid_list  用户列表
+ * @param tagid 标签id
+ * @return {Promise<*>}
+ *
+ */
+async  function batchUsersTag(openid_list,tagid) {
+    //获取access_token
+    const { access_token } =await fetchAccessToken();
+    //定义请求
+    const url = `${URL_PREFIX}tags/members/batchtagging?access_token=${access_token}`;
+    //发送请求
+    return await rp({method:'POST',url,json:true,body: {openid_list,tagid}});
+
+}
+
+
+
 (async () => {
-    let result = await deleteMenu();
-    console.log(result);
-    result = await createMenu();
-    console.log(result);
+   let result1 = await createTag('xiaomahua');
+   console.log(result1);
+   let result2 = await batchUsersTag([
+       `opI8M6BPGa21srvmQYAdCtOK21RA`,
+       `opI8M6DQfRTbHlvBbrCPm5CcjwGw`,
+
+   ],result1.tag.id);
+   console.log(result2);
+
+   let  result3 = await getTagUsers( result1.tag.id)
+    console.log(result3);
 })()
