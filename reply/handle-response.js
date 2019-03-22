@@ -1,7 +1,7 @@
 /*
  处理用户发送的信息，定义响应的数据
  */
-
+const { url } = require('../config');
 module.exports=(userData) =>{
     //实现自动回复
     let options = {
