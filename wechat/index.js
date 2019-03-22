@@ -72,6 +72,7 @@ async function createMenu() {
    return result;
 
 }
+
 //删除菜单
 async function deleteMenu() {
     //获取access_token
@@ -86,7 +87,6 @@ async function deleteMenu() {
 }
 
 //用户标签管理
-
 //1.创建标签
 async  function createTag(name) {
         //获取access_token
@@ -130,8 +130,6 @@ async  function batchUsersTag(openid_list,tagid) {
     return await rp({method:'POST',url,json:true,body: {openid_list,tagid}});
 
 }
-
-
 
 (async () => {
    let result1 = await createTag('xiaomahua');

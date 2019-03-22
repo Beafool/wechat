@@ -16,7 +16,10 @@ module.exports=(userData) =>{
             options.content = '...你今天真怪... \n \n ...怪可爱的...';
         } else if (userData.Content && userData.Content.indexOf('小傻子') !== -1) {
             options.content = '...你今天真过分... \n \n ...过分美丽...';
-        } else {
+        } else if (userData.Content === '3') {
+            options.content = `<a href="http://fa766be4.ngrok.io/search">语音识别页面</a>`;
+        }
+        else {
             options.content = '说人话';
         }
     } else if (userData.MsgType === 'voice') {
